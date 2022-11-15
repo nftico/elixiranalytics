@@ -5,7 +5,7 @@ import * as url from '../../util/url'
 import * as api from '../../api'
 import ListReport from './../reports/list'
 
-function EntryPages({query, site}) {
+function EntryPages({query, site, timer}) {
   function fetchData() {
     return api.get(url.apiPath(site, '/entry-pages'), query, {limit: 9})
   }
@@ -23,13 +23,14 @@ function EntryPages({query, site}) {
       valueKey="unique_entrances"
       detailsLink={url.sitePath(site, '/entry-pages')}
       query={query}
+      timer={timer}
       externalLinkDest={externalLinkDest}
       color="bg-orange-50"
     />
   )
 }
 
-function ExitPages({query, site}) {
+function ExitPages({query, site, timer}) {
   function fetchData() {
     return api.get(url.apiPath(site, '/exit-pages'), query, {limit: 9})
   }
@@ -47,13 +48,14 @@ function ExitPages({query, site}) {
       valueKey="unique_exits"
       detailsLink={url.sitePath(site, '/exit-pages')}
       query={query}
+      timer={timer}
       externalLinkDest={externalLinkDest}
       color="bg-orange-50"
     />
   )
 }
 
-function TopPages({query, site}) {
+function TopPages({query, site, timer}) {
   function fetchData() {
     return api.get(url.apiPath(site, '/pages'), query, {limit: 9})
   }
@@ -69,6 +71,7 @@ function TopPages({query, site}) {
       keyLabel="Page"
       detailsLink={url.sitePath(site, '/pages')}
       query={query}
+      timer={timer}
       externalLinkDest={externalLinkDest}
       color="bg-orange-50"
     />

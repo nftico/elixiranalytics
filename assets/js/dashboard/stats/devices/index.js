@@ -5,7 +5,7 @@ import ListReport from '../reports/list'
 import * as api from '../../api'
 import * as url from '../../util/url'
 
-function Browsers({query, site}) {
+function Browsers({query, site, timer}) {
   function fetchData() {
     return api.get(url.apiPath(site, '/browsers'), query)
   }
@@ -16,11 +16,12 @@ function Browsers({query, site}) {
       filter={{browser: 'name'}}
       keyLabel="Browser"
       query={query}
+      timer={timer}
     />
   )
 }
 
-function BrowserVersions({query, site}) {
+function BrowserVersions({query, site, timer}) {
   function fetchData() {
     return api.get(url.apiPath(site, '/browser-versions'), query)
   }
@@ -31,11 +32,12 @@ function BrowserVersions({query, site}) {
       filter={{browser_version: 'name'}}
       keyLabel={query.filters.browser + ' version'}
       query={query}
+      timer={timer}
     />
   )
 }
 
-function OperatingSystems({query, site}) {
+function OperatingSystems({query, site, timer}) {
   function fetchData() {
     return api.get(url.apiPath(site, '/operating-systems'), query)
   }
@@ -46,11 +48,12 @@ function OperatingSystems({query, site}) {
       filter={{os: 'name'}}
       keyLabel="Operating system"
       query={query}
+      timer={timer}
     />
   )
 }
 
-function OperatingSystemVersions({query, site}) {
+function OperatingSystemVersions({query, site, timer}) {
   function fetchData() {
     return api.get(url.apiPath(site, '/operating-system-versions'), query)
   }
@@ -61,11 +64,12 @@ function OperatingSystemVersions({query, site}) {
       filter={{os_version: 'name'}}
       keyLabel={query.filters.os + ' version'}
       query={query}
+      timer={timer}
     />
   )
 }
 
-function ScreenSizes({query, site}) {
+function ScreenSizes({query, site, timer}) {
   function fetchData() {
     return api.get(url.apiPath(site, '/screen-sizes'), query)
   }
@@ -86,6 +90,7 @@ function ScreenSizes({query, site}) {
       query={query}
       renderIcon={renderIcon}
       tooltipText={renderTooltipText}
+      timer={timer}
     />
   )
 }

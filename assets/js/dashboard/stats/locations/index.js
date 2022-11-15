@@ -7,7 +7,7 @@ import * as api from '../../api'
 import {apiPath, sitePath} from '../../util/url'
 import ListReport from '../reports/list'
 
-function Countries({query, site, onClick}) {
+function Countries({query, site, onClick, timer}) {
   function fetchData() {
     return api.get(apiPath(site, '/countries'), query, {limit: 9}).then((res) => {
       return res.map(row => Object.assign({}, row, {percentage: undefined}))
@@ -26,13 +26,14 @@ function Countries({query, site, onClick}) {
       keyLabel="Country"
       detailsLink={sitePath(site, '/countries')}
       query={query}
+      timer={timer}
       renderIcon={renderIcon}
       color="bg-orange-50"
     />
   )
 }
 
-function Regions({query, site, onClick}) {
+function Regions({query, site, onClick, timer}) {
   function fetchData() {
     return api.get(apiPath(site, '/regions'), query, {limit: 9})
   }
@@ -49,13 +50,14 @@ function Regions({query, site, onClick}) {
       keyLabel="Region"
       detailsLink={sitePath(site, '/regions')}
       query={query}
+      timer={timer}
       renderIcon={renderIcon}
       color="bg-orange-50"
     />
   )
 }
 
-function Cities({query, site}) {
+function Cities({query, site, timer}) {
   function fetchData() {
     return api.get(apiPath(site, '/cities'), query, {limit: 9})
   }
@@ -71,6 +73,7 @@ function Cities({query, site}) {
       keyLabel="City"
       detailsLink={sitePath(site, '/cities')}
       query={query}
+      timer={timer}
       renderIcon={renderIcon}
       color="bg-orange-50"
     />

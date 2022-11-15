@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom'
 
 import FadeIn from '../../fade-in'
@@ -30,15 +30,11 @@ export default function ListReport(props) {
   const [state, setState] = useState({loading: true, list: null})
   const valueKey = props.valueKey || 'visitors'
   const showConversionRate = !!props.query.filters.goal
-  const prevQuery = useRef();
 
   function fetchData() {
-    if (typeof(prevQuery.current) === 'undefined' || prevQuery.current !== props.query) {
-      prevQuery.current = props.query;
-      setState({loading: true, list: null})
-      props.fetchData()
-        .then((res) => setState({loading: false, list: res}))
-    }
+    setState({loading: true, list: null})
+    props.fetchData()
+      .then((res) => setState({loading: false, list: res}))
   }
 
 
