@@ -38,7 +38,7 @@ class Countries extends React.Component {
   onVisible() {
     this.fetchCountries().then(this.drawMap.bind(this))
     window.addEventListener('resize', this.resizeMap);
-    if (this.props.timer) this.props.timer.onTick(this.updateCountries.bind(this))
+    if (this.props.timer) this.props.timer.onTick('LOCATIONS', this.updateCountries.bind(this))
   }
 
   getDataset() {

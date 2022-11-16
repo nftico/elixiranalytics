@@ -12,6 +12,7 @@ function Browsers({query, site, timer}) {
 
   return (
     <ListReport
+      reportType="DEVICES"
       fetchData={fetchData}
       filter={{browser: 'name'}}
       keyLabel="Browser"
@@ -28,6 +29,7 @@ function BrowserVersions({query, site, timer}) {
 
   return (
     <ListReport
+      reportType="DEVICES"
       fetchData={fetchData}
       filter={{browser_version: 'name'}}
       keyLabel={query.filters.browser + ' version'}
@@ -44,6 +46,7 @@ function OperatingSystems({query, site, timer}) {
 
   return (
     <ListReport
+      reportType="DEVICES"
       fetchData={fetchData}
       filter={{os: 'name'}}
       keyLabel="Operating system"
@@ -60,6 +63,7 @@ function OperatingSystemVersions({query, site, timer}) {
 
   return (
     <ListReport
+      reportType="DEVICES"
       fetchData={fetchData}
       filter={{os_version: 'name'}}
       keyLabel={query.filters.os + ' version'}
@@ -84,6 +88,7 @@ function ScreenSizes({query, site, timer}) {
 
   return (
     <ListReport
+      reportType="DEVICES"
       fetchData={fetchData}
       filter={{screen: 'name'}}
       keyLabel="Screen size"

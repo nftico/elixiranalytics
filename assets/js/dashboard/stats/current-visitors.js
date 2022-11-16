@@ -12,7 +12,7 @@ export default class CurrentVisitors extends React.Component {
 
   componentDidMount() {
     this.updateCount()
-    this.props.timer.onTick(this.updateCount.bind(this))
+    this.props.timer.onTick('CURRENT_VISITORS', this.updateCount.bind(this))
   }
 
   updateCount() {

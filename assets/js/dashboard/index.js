@@ -11,16 +11,16 @@ const THIRTY_SECONDS = 30000
 
 class Timer {
   constructor() {
-    this.listeners = []
+    this.listeners = {}
     this.intervalId = setInterval(this.dispatchTick.bind(this), THIRTY_SECONDS)
   }
 
-  onTick(listener) {
-    this.listeners.push(listener)
+  onTick(reportType, listener) {
+    this.listeners[reportType] = listener
   }
 
   dispatchTick() {
-    for (const listener of this.listeners) {
+    for (const listener of Object.values(this.listeners)) {
       listener()
     }
   }

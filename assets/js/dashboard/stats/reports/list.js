@@ -40,7 +40,7 @@ export default function ListReport(props) {
 
   function onVisible() {
     fetchData()
-    if (props.timer) props.timer.onTick(fetchData)
+    if (props.timer) props.timer.onTick(props.reportType, fetchData)
   }
 
 

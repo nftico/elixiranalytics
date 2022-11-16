@@ -16,6 +16,7 @@ function EntryPages({query, site, timer}) {
 
   return (
     <ListReport
+      reportType="PAGES"
       fetchData={fetchData}
       filter={{entry_page: 'name'}}
       keyLabel="Entry page"
@@ -41,6 +42,7 @@ function ExitPages({query, site, timer}) {
 
   return (
     <ListReport
+      reportType="PAGES"
       fetchData={fetchData}
       filter={{exit_page: 'name'}}
       keyLabel="Exit page"
@@ -66,6 +68,7 @@ function TopPages({query, site, timer}) {
 
   return (
     <ListReport
+      reportType="PAGES"
       fetchData={fetchData}
       filter={{page: 'name'}}
       keyLabel="Page"

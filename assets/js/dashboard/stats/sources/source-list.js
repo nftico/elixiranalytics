@@ -20,7 +20,7 @@ class AllSources extends React.Component {
 
   onVisible() {
     this.fetchReferrers()
-    if (this.props.timer) this.props.timer.onTick(this.fetchReferrers.bind(this))
+    if (this.props.timer) this.props.timer.onTick("SOURCES", this.fetchReferrers.bind(this))
   }
 
   componentDidUpdate(prevProps) {
@@ -153,7 +153,7 @@ class UTMSources extends React.Component {
 
   componentDidMount() {
     this.fetchReferrers()
-    if (this.props.timer) this.props.timer.onTick(this.fetchReferrers.bind(this))
+    if (this.props.timer) this.props.timer.onTick("SOURCES", this.fetchReferrers.bind(this))
   }
 
   componentDidUpdate(prevProps) {

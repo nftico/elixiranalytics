@@ -327,8 +327,8 @@ export default class VisitorGraph extends React.Component {
     this.fetchGraphData()
     this.fetchTopStatData()
     if (this.props.timer) {
-      this.props.timer.onTick(this.fetchGraphData)
-      this.props.timer.onTick(this.fetchTopStatData)
+      this.props.timer.onTick('VISITOR_GRAPH', this.fetchGraphData)
+      this.props.timer.onTick('TOP_STATS', this.fetchTopStatData)
     }
   }
 

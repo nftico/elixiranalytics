@@ -20,6 +20,7 @@ function Countries({query, site, onClick, timer}) {
 
   return (
     <ListReport
+      reportType="LOCATIONS"
       fetchData={fetchData}
       filter={{country: 'code', country_name: 'name'}}
       onClick={onClick}
@@ -44,6 +45,7 @@ function Regions({query, site, onClick, timer}) {
 
   return (
     <ListReport
+      reportType="LOCATIONS"
       fetchData={fetchData}
       filter={{region: 'code', region_name: 'name'}}
       onClick={onClick}
@@ -68,6 +70,7 @@ function Cities({query, site, timer}) {
 
   return (
     <ListReport
+      reportType="LOCATIONS"
       fetchData={fetchData}
       filter={{city: 'code', city_name: 'name'}}
       keyLabel="City"
