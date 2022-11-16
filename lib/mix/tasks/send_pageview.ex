@@ -15,13 +15,15 @@ defmodule Mix.Tasks.SendPageview do
   @default_domain "dummy.site"
   @default_page "/"
   @default_referrer "https://google.com"
+  @default_screen_width "1666"
   @options [
     ip: :string,
     user_agent: :string,
     domain: :string,
     page: :string,
     referrer: :string,
-    host: :string
+    host: :string,
+    screen_width: :string
   ]
 
   def run(opts) do
@@ -77,12 +79,16 @@ defmodule Mix.Tasks.SendPageview do
     page = Keyword.get(opts, :page, @default_page)
     referrer = Keyword.get(opts, :referrer, @default_referrer)
 
+    screen_width =
+      Keyword.get(opts, :screen_width, @default_screen_width)
+      |> String.to_integer()
+
     %{
       name: "pageview",
       url: "http://#{domain}#{page}",
       domain: domain,
       referrer: referrer,
-      width: 1666
+      screen_width: screen_width
     }
   end
 
