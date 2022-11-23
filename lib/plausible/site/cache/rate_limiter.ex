@@ -14,12 +14,9 @@ defmodule Plausible.Site.RateLimiter do
 
   To look up each site's configuration, the RateLimiter fetches
   a Site by domain using `Plausible.Cache` interface.
-  If the Site is not found in Cache, a DB refresh attempt is made.
-  The result of that last attempt gets stored in Cache to prevent
-  excessive DB queries.
 
   The module defines two policies outside the regular bucket inspection:
-    * when the site does not exist in the database: #{@policy_for_non_existing_sites}
+    * when the the site is not found in cache: #{@policy_for_non_existing_sites}
     * when the underlying rate limiting mechanism returns
       an internal error: #{@policy_on_rate_limiting_backend_error}
 
@@ -48,15 +45,12 @@ defmodule Plausible.Site.RateLimiter do
 
   defp policy(domain, opts) do
     result =
-      case get_from_cache_or_refresh(domain, Keyword.get(opts, :cache_opts, [])) do
-        %Ecto.NoResultsError{} ->
+      case Cache.get(domain, Keyword.get(opts, :cache_opts, [])) do
+        nil ->
           @policy_for_non_existing_sites
 
         %Site{} = site ->
           check_rate_limit(site, opts)
-
-        {:error, _} ->
-          @policy_on_rate_limiting_backend_error
       end
 
     :ok = emit_allowance_telemetry(result)
@@ -85,21 +79,6 @@ defmodule Plausible.Site.RateLimiter do
         )
 
         @policy_on_rate_limiting_backend_error
-    end
-  end
-
-  defp get_from_cache_or_refresh(domain, cache_opts) do
-    case Cache.get(domain, cache_opts) do
-      %Site{} = site ->
-        site
-
-      %Ecto.NoResultsError{} = not_found ->
-        not_found
-
-      nil ->
-        with {:ok, refreshed_item} <- Cache.refresh_one(domain, cache_opts) do
-          refreshed_item
-        end
     end
   end
 

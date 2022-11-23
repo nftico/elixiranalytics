@@ -12,10 +12,6 @@ defmodule Plausible.Site.RateLimiterTest do
     {:ok, %{opts: opts}}
   end
 
-  test "(for now) throws an exception when cache is disabled" do
-    assert_raise(RuntimeError, fn -> RateLimiter.allow?("example.com") end)
-  end
-
   test "sites not found in cache/DB are denied", %{opts: opts} do
     refute RateLimiter.allow?("example.com", opts)
   end
@@ -24,14 +20,6 @@ defmodule Plausible.Site.RateLimiterTest do
     domain = "site1.example.com"
 
     add_site_and_refresh_cache(test, domain: domain)
-    assert RateLimiter.allow?(domain, opts)
-  end
-
-  test "site from DB with no ingest_rate_limit_threshold is allowed", %{opts: opts} do
-    domain = "site1.example.com"
-
-    insert(:site, domain: domain)
-
     assert RateLimiter.allow?(domain, opts)
   end
 
@@ -150,7 +138,7 @@ defmodule Plausible.Site.RateLimiterTest do
 
   defp add_site_and_refresh_cache(cache_name, site_data) do
     site = insert(:site, site_data)
-    Cache.refresh_one(site.domain, cache_name: cache_name, force?: true)
+    Cache.refresh_updated_recently(cache_name: cache_name, force?: true)
     site
   end
 
