@@ -1,5 +1,5 @@
 defmodule Plausible.Ingestion.EventTest do
-  use Plausible.DataCase
+  use Plausible.DataCase, async: true
 
   import Phoenix.ConnTest
 
