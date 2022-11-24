@@ -12,15 +12,15 @@ defmodule Plausible.Site.GateKeeperTest do
     {:ok, %{opts: opts}}
   end
 
-  test "sites not found in cache/DB are denied", %{opts: opts} do
-    refute GateKeeper.allow?("example.com", opts)
+  test "sites not found in cache are denied", %{opts: opts} do
+    refute GateKeeper.allowance("example.com", opts).passed?
   end
 
   test "site from cache with no ingest_rate_limit_threshold is allowed", %{test: test, opts: opts} do
     domain = "site1.example.com"
 
     add_site_and_refresh_cache(test, domain: domain)
-    assert GateKeeper.allow?(domain, opts)
+    assert GateKeeper.allowance(domain, opts).passed?
   end
 
   test "rate limiting works with threshold", %{test: test, opts: opts} do
@@ -32,9 +32,9 @@ defmodule Plausible.Site.GateKeeperTest do
       ingest_rate_limit_scale_seconds: 60
     )
 
-    assert GateKeeper.allow?(domain, opts)
-    refute GateKeeper.allow?(domain, opts)
-    refute GateKeeper.allow?(domain, opts)
+    assert GateKeeper.allowance(domain, opts).passed?
+    refute GateKeeper.allowance(domain, opts).passed?
+    refute GateKeeper.allowance(domain, opts).passed?
   end
 
   test "rate limiting works with scale window", %{test: test, opts: opts} do
@@ -46,11 +46,11 @@ defmodule Plausible.Site.GateKeeperTest do
       ingest_rate_limit_scale_seconds: 1
     )
 
-    assert GateKeeper.allow?(domain, opts)
+    assert GateKeeper.allowance(domain, opts).passed?
     Process.sleep(1)
-    refute GateKeeper.allow?(domain, opts)
+    refute GateKeeper.allowance(domain, opts).passed?
     Process.sleep(1_000)
-    assert GateKeeper.allow?(domain, opts)
+    assert GateKeeper.allowance(domain, opts).passed?
   end
 
   test "rate limiting prioritises cache lookups", %{test: test, opts: opts} do
@@ -68,9 +68,9 @@ defmodule Plausible.Site.GateKeeperTest do
     # is completely empty
     insert(:site)
 
-    assert GateKeeper.allow?(domain, opts)
+    assert GateKeeper.allowance(domain, opts).passed?
     :ok = Cache.refresh_all(opts[:cache_opts])
-    refute GateKeeper.allow?(domain, opts)
+    refute GateKeeper.allowance(domain, opts).passed?
   end
 
   test "rate limiter policy switches to allow when RL backend errors bubble-up", %{
@@ -86,14 +86,14 @@ defmodule Plausible.Site.GateKeeperTest do
         ingest_rate_limit_scale_seconds: 600
       )
 
-    assert GateKeeper.allow?(domain, opts)
-    refute GateKeeper.allow?(domain, opts)
+    assert GateKeeper.allowance(domain, opts).passed?
+    refute GateKeeper.allowance(domain, opts).passed?
 
     {:ok, :broken} = break_hammer(site)
 
     log =
       capture_log(fn ->
-        assert GateKeeper.allow?(domain, opts)
+        assert GateKeeper.allowance(domain, opts).passed?
       end)
 
     assert log =~ "Error checking rate limit for 'ingest:site:causingerrors.example.com'"
@@ -102,7 +102,7 @@ defmodule Plausible.Site.GateKeeperTest do
 
   test "telemetry event is emitted on :deny", %{test: test, opts: opts} do
     start_telemetry_handler(test, event: GateKeeper.policy_telemetry_event(:deny))
-    GateKeeper.allow?("example.com", opts)
+    GateKeeper.allowance("example.com", opts).passed?
     assert_receive :telemetry_handled
   end
 
@@ -112,22 +112,22 @@ defmodule Plausible.Site.GateKeeperTest do
     domain = "site1.example.com"
     add_site_and_refresh_cache(test, domain: domain)
 
-    GateKeeper.allow?(domain, opts)
+    GateKeeper.allowance(domain, opts).passed?
     assert_receive :telemetry_handled
   end
 
   test "telemetry event is emitted on :block", %{test: test, opts: opts} do
     start_telemetry_handler(test, event: GateKeeper.policy_telemetry_event(:block))
     add_site_and_refresh_cache(test, domain: "example.com", ingest_rate_limit_threshold: 0)
-    GateKeeper.allow?("example.com", opts)
+    GateKeeper.allowance("example.com", opts).passed?
     assert_receive :telemetry_handled
   end
 
   test "telemetry event is emitted on :throttle", %{test: test, opts: opts} do
     start_telemetry_handler(test, event: GateKeeper.policy_telemetry_event(:throttle))
     add_site_and_refresh_cache(test, domain: "example.com", ingest_rate_limit_threshold: 1)
-    GateKeeper.allow?("example.com", opts)
-    GateKeeper.allow?("example.com", opts)
+    GateKeeper.allowance("example.com", opts).passed?
+    GateKeeper.allowance("example.com", opts).passed?
     assert_receive :telemetry_handled
   end
 

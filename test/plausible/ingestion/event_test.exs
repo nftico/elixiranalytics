@@ -23,6 +23,8 @@ defmodule Plausible.Ingestion.EventTest do
 
   describe "integration" do
     test "build_and_buffer/1 creates an event" do
+      insert(:site, domain: "plausible-ingestion-event-basic.test")
+
       assert {:ok, %{buffered: [_], dropped: []}} =
                @valid_request
                |> Map.put(:domains, ["plausible-ingestion-event-basic.test"])
@@ -61,6 +63,9 @@ defmodule Plausible.Ingestion.EventTest do
     end
 
     test "build_and_buffer/1 takes multiple domains" do
+      insert(:site, domain: "plausible-ingestion-event-multiple-1.test")
+      insert(:site, domain: "plausible-ingestion-event-multiple-2.test")
+
       request = %Plausible.Ingestion.Request{
         @valid_request
         | domains: [
@@ -80,20 +85,19 @@ defmodule Plausible.Ingestion.EventTest do
     end
 
     test "build_and_buffer/1 drops invalid events" do
+      insert(:site, domain: "plausible-ingestion-event-multiple-with-error-1.test")
+
       request = %Plausible.Ingestion.Request{
         @valid_request
-        | domains: ["plausible-ingestion-event-multiple-with-error-1.test", nil]
+        | domains: ["plausible-ingestion-event-multiple-with-error-1.test"],
+          uri: URI.parse("")
       }
 
-      assert {:ok, %{buffered: [_], dropped: [dropped]}} =
+      assert {:ok, %{buffered: [], dropped: [dropped]}} =
                Plausible.Ingestion.Event.build_and_buffer(request)
 
       assert {:error, changeset} = dropped.drop_reason
       refute changeset.valid?
-
-      assert %Plausible.ClickhouseEvent{
-               domain: "plausible-ingestion-event-multiple-with-error-1.test"
-             } = get_event("plausible-ingestion-event-multiple-with-error-1.test")
     end
 
     defp get_event(domain) do

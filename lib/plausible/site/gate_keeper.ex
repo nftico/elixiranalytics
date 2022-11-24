@@ -9,15 +9,22 @@ defmodule Plausible.Site.GateKeeper do
   @policy_for_non_existing_sites @deny
   @policy_on_rate_limiting_backend_error @allow
 
+  defstruct passed?: false,
+            policy: nil
+
+  @type t() :: %__MODULE__{
+          passed?: boolean(),
+          policy: policy()
+        }
+
   @moduledoc """
   Thin wrapper around Hammer for gate keeping domainmain-specific events
   during the ingestion phase. Currently there are two policies
-  on which the `allow/2` function operates:
+  on which the `allowance/2` function operates:
     * `:allow`
     * `:deny`
     * `:block` (synonymous to `:deny`, indicates disabled sites)
     * `:throttle` (synonymous to `:deny`, indicates rate limiting)
-
 
   Rate Limiting buckets are configured per site (externally via the CRM).
   See: `Plausible.Site`
@@ -38,9 +45,14 @@ defmodule Plausible.Site.GateKeeper do
 
   require Logger
 
-  @spec allow?(String.t(), Keyword.t()) :: boolean()
-  def allow?(domain, opts \\ []) do
-    policy(domain, opts) == @allow
+  @spec allowance(String.t(), Keyword.t()) :: t()
+  def allowance(domain, opts \\ []) when is_binary(domain) do
+    policy = policy(domain, opts)
+
+    %__MODULE__{
+      policy: policy,
+      passed?: policy == @allow
+    }
   end
 
   @spec key(String.t()) :: String.t()
@@ -53,7 +65,11 @@ defmodule Plausible.Site.GateKeeper do
     [:plausible, :ingest, :gate, policy]
   end
 
-  defp policy(domain, opts) do
+  defp policy(nil, _) do
+    @policy_for_non_existing_sites
+  end
+
+  defp policy(domain, opts) when is_binary(domain) do
     result =
       case Cache.get(domain, Keyword.get(opts, :cache_opts, [])) do
         nil ->
