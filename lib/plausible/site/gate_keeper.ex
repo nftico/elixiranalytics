@@ -1,13 +1,23 @@
-defmodule Plausible.Site.RateLimiter do
-  @policy_for_non_existing_sites :deny
-  @policy_on_rate_limiting_backend_error :allow
+defmodule Plausible.Site.GateKeeper do
+  @allow :allow
+  @block :block
+  @deny :deny
+  @throttle :throttle
+
+  @type policy() :: :allow | :deny | :block | :throttle
+
+  @policy_for_non_existing_sites @deny
+  @policy_on_rate_limiting_backend_error @allow
 
   @moduledoc """
-  Thin wrapper around Hammer for rate limiting domain-specific events
+  Thin wrapper around Hammer for gate keeping domainmain-specific events
   during the ingestion phase. Currently there are two policies
   on which the `allow/2` function operates:
     * `:allow`
     * `:deny`
+    * `:block` (synonymous to `:deny`, indicates disabled sites)
+    * `:throttle` (synonymous to `:deny`, indicates rate limiting)
+
 
   Rate Limiting buckets are configured per site (externally via the CRM).
   See: `Plausible.Site`
@@ -30,7 +40,7 @@ defmodule Plausible.Site.RateLimiter do
 
   @spec allow?(String.t(), Keyword.t()) :: boolean()
   def allow?(domain, opts \\ []) do
-    policy(domain, opts) == :allow
+    policy(domain, opts) == @allow
   end
 
   @spec key(String.t()) :: String.t()
@@ -38,9 +48,9 @@ defmodule Plausible.Site.RateLimiter do
     "ingest:site:#{domain}"
   end
 
-  @spec policy_telemetry_event(:allow | :deny) :: list(atom())
+  @spec policy_telemetry_event(policy()) :: list(atom())
   def policy_telemetry_event(policy) do
-    [:plausible, :ingest, :rate_limit, policy]
+    [:plausible, :ingest, :gate, policy]
   end
 
   defp policy(domain, opts) do
@@ -54,15 +64,16 @@ defmodule Plausible.Site.RateLimiter do
       end
 
     :ok = emit_allowance_telemetry(result)
+
     result
   end
 
   defp check_rate_limit(%Site{ingest_rate_limit_threshold: nil}, _opts) do
-    :allow
+    @allow
   end
 
   defp check_rate_limit(%Site{ingest_rate_limit_threshold: 0}, _opts) do
-    :block
+    @block
   end
 
   defp check_rate_limit(%Site{ingest_rate_limit_threshold: threshold} = site, opts)
@@ -72,10 +83,10 @@ defmodule Plausible.Site.RateLimiter do
 
     case Hammer.check_rate(key, scale_ms, threshold) do
       {:deny, _} ->
-        :throttle
+        @throttle
 
       {:allow, _} ->
-        :allow
+        @allow
 
       {:error, reason} ->
         Logger.error(
