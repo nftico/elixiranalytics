@@ -116,6 +116,21 @@ defmodule Plausible.Site.GateKeeperTest do
     assert_receive :telemetry_handled
   end
 
+  test "telemetry event is emitted on :block", %{test: test, opts: opts} do
+    start_telemetry_handler(test, event: GateKeeper.policy_telemetry_event(:block))
+    add_site_and_refresh_cache(test, domain: "example.com", ingest_rate_limit_threshold: 0)
+    GateKeeper.allow?("example.com", opts)
+    assert_receive :telemetry_handled
+  end
+
+  test "telemetry event is emitted on :throttle", %{test: test, opts: opts} do
+    start_telemetry_handler(test, event: GateKeeper.policy_telemetry_event(:throttle))
+    add_site_and_refresh_cache(test, domain: "example.com", ingest_rate_limit_threshold: 1)
+    GateKeeper.allow?("example.com", opts)
+    GateKeeper.allow?("example.com", opts)
+    assert_receive :telemetry_handled
+  end
+
   # We need a way to force Hammer to error-out on Hammer.check_rate/3.
   # This is tricky because we don't configure multiple backends,
   # so the easiest (and naive) way to do it, without mocking, is to
