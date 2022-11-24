@@ -17,7 +17,7 @@ defmodule Plausible.Ingestion.EventTest do
     conn = build_conn(:post, "/api/events", payload)
     assert {:ok, request} = Request.build(conn)
 
-    assert %{buffered: [_], dropped: []} = Event.build_and_buffer(request)
+    assert {:ok, %{buffered: [_], dropped: []}} = Event.build_and_buffer(request)
   end
 
   test "event pipeline drops a request when site does not exists" do
