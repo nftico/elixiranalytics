@@ -1,6 +1,8 @@
 defmodule Plausible.Ingestion.Request do
   @moduledoc """
-  The %Plausible.Ingestion.Request{} struct stores all needed fields to create an event downstream.
+  The %Plausible.Ingestion.Request{} struct stores all needed fields
+  to create an event downstream. Pre-eliminary validation is made
+  to detect user errors early.
   """
 
   use Ecto.Schema
