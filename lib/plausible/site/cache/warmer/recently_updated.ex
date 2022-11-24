@@ -1,4 +1,8 @@
 defmodule Plausible.Site.Cache.Warmer.RecentlyUpdated do
+  @moduledoc """
+  A Cache.Warmer adapter that only refreshes the Cache
+  with recently updated sites every 30 seconds.
+  """
   alias Plausible.Site.Cache
 
   @spec child_spec(Keyword.t()) :: Supervisor.child_spec() | :ignore
