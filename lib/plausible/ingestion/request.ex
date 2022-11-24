@@ -204,7 +204,7 @@ defmodule Plausible.Ingestion.Request do
     Changeset.put_change(changeset, :user_agent, user_agent)
   end
 
-  defp get_pathname(_uri = nil, _hash_mode), do: "/"
+  defp get_pathname(nil, _hash_mode), do: "/"
 
   defp get_pathname(uri, hash_mode) do
     pathname =
