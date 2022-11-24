@@ -125,7 +125,7 @@ defmodule Plausible.Ingestion.RequestTest do
       url: "http://dummy.site/index.html",
       referrer: "https://example.com",
       screen_width: 1024,
-      hashMode: true,
+      hashMode: 1,
       props: %{
         "custom1" => "property1",
         "custom2" => "property2"
@@ -146,7 +146,7 @@ defmodule Plausible.Ingestion.RequestTest do
     payload = %{
       name: "pageview",
       domain: "dummy.site",
-      url: "http://dummy.site/pictures/index.html"
+      url: "http://dummy.site/pictures/index.html#foo"
     }
 
     conn = build_conn(:post, "/api/events", payload)
@@ -154,6 +154,21 @@ defmodule Plausible.Ingestion.RequestTest do
     assert {:ok, request} = Request.build(conn)
 
     assert request.pathname == "/pictures/index.html"
+  end
+
+  test "pathname is set with hashMode" do
+    payload = %{
+      name: "pageview",
+      domain: "dummy.site",
+      url: "http://dummy.site/pictures/index.html#foo",
+      hashMode: 1
+    }
+
+    conn = build_conn(:post, "/api/events", payload)
+
+    assert {:ok, request} = Request.build(conn)
+
+    assert request.pathname == "/pictures/index.html#foo"
   end
 
   test "query params are set" do
