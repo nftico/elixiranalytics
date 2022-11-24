@@ -2,6 +2,7 @@ defmodule Plausible.Ingestion.RequestTest do
   use Plausible.DataCase, async: true
 
   import Phoenix.ConnTest
+  import Plug.Conn
 
   alias Plausible.Ingestion.Request
 
@@ -35,6 +36,8 @@ defmodule Plausible.Ingestion.RequestTest do
     assert request.pathname == "/"
     assert request.remote_ip == "127.0.0.1"
     assert %NaiveDateTime{} = request.timestamp
+    assert request.user_agent == nil
+    assert request.hostname == "dummy.site"
     assert request.uri.host == "dummy.site"
     assert request.uri.scheme == "http"
     assert request.props == %{}
@@ -66,7 +69,7 @@ defmodule Plausible.Ingestion.RequestTest do
     assert request.uri.host == "dummy.site"
   end
 
-  test "request can be built with multiple domains" do
+  test "request can be built for multiple domains" do
     payload = %{
       n: "pageview",
       d: "dummy.site,crash.site",
@@ -79,8 +82,7 @@ defmodule Plausible.Ingestion.RequestTest do
     assert request.uri.host == "dummy.site"
   end
 
-  #### : XXX finished here
-  test "hostname is none if uri not provided" do
+  test "hostname is (none) if host-less uri provided" do
     payload = %{
       name: "pageview",
       domain: "dummy.site",
@@ -89,5 +91,82 @@ defmodule Plausible.Ingestion.RequestTest do
 
     conn = build_conn(:post, "/api/events", payload)
     assert {:ok, request} = Request.build(conn)
+    assert request.hostname == "(none)"
+  end
+
+  test "hostname is set" do
+    payload = %{
+      name: "pageview",
+      domain: "dummy.site",
+      url: "http://dummy.site/index.html"
+    }
+
+    conn = build_conn(:post, "/api/events", payload)
+    assert {:ok, request} = Request.build(conn)
+    assert request.hostname == "dummy.site"
+  end
+
+  test "user agent is set as-is" do
+    payload = %{
+      name: "pageview",
+      domain: "dummy.site",
+      url: "http://dummy.site/index.html"
+    }
+
+    conn = build_conn(:post, "/api/events", payload) |> put_req_header("user-agent", "Mozilla")
+    assert {:ok, request} = Request.build(conn)
+    assert request.user_agent == "Mozilla"
+  end
+
+  test "request params are set" do
+    payload = %{
+      name: "pageview",
+      domain: "dummy.site",
+      url: "http://dummy.site/index.html",
+      referrer: "https://example.com",
+      screen_width: 1024,
+      hashMode: true,
+      props: %{
+        "custom1" => "property1",
+        "custom2" => "property2"
+      }
+    }
+
+    conn = build_conn(:post, "/api/events", payload)
+
+    assert {:ok, request} = Request.build(conn)
+    assert request.referrer == "https://example.com"
+    assert request.screen_width == 1024
+    assert request.hash_mode == true
+    assert request.props["custom1"] == "property1"
+    assert request.props["custom2"] == "property2"
+  end
+
+  test "pathname is set" do
+    payload = %{
+      name: "pageview",
+      domain: "dummy.site",
+      url: "http://dummy.site/pictures/index.html"
+    }
+
+    conn = build_conn(:post, "/api/events", payload)
+
+    assert {:ok, request} = Request.build(conn)
+
+    assert request.pathname == "/pictures/index.html"
+  end
+
+  test "query params are set" do
+    payload = %{
+      name: "pageview",
+      domain: "dummy.site",
+      url: "http://dummy.site/pictures/index.html?foo=bar&baz=bam"
+    }
+
+    conn = build_conn(:post, "/api/events", payload)
+
+    assert {:ok, request} = Request.build(conn)
+    assert request.query_params["foo"] == "bar"
+    assert request.query_params["baz"] == "bam"
   end
 end

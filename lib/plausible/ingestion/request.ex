@@ -136,7 +136,7 @@ defmodule Plausible.Ingestion.Request do
   defp put_hostname(changeset) do
     host =
       case changeset.changes[:uri] do
-        %{host: ""} -> "(none)"
+        %{host: empty} when empty in ["", nil] -> "(none)"
         %{host: host} when is_binary(host) -> host
         _ -> nil
       end
