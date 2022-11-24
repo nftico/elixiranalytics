@@ -61,6 +61,10 @@ defmodule Plausible.Site.RateLimiter do
     :allow
   end
 
+  defp check_rate_limit(%Site{ingest_rate_limit_threshold: 0}, _opts) do
+    :block
+  end
+
   defp check_rate_limit(%Site{ingest_rate_limit_threshold: threshold} = site, opts)
        when is_integer(threshold) do
     key = Keyword.get(opts, :key, key(site.domain))
@@ -68,7 +72,7 @@ defmodule Plausible.Site.RateLimiter do
 
     case Hammer.check_rate(key, scale_ms, threshold) do
       {:deny, _} ->
-        :deny
+        :throttle
 
       {:allow, _} ->
         :allow
